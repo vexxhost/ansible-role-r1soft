@@ -1,0 +1,31 @@
+---
+- hosts: r1soft_servers
+  tasks:
+    - name: create fake volume directory
+      file:
+        path: /volume
+        state: directory
+
+- hosts: all
+  tasks: []
+
+- hosts: r1soft_servers
+  roles:
+    - role: ansible-role-r1soft
+
+- hosts: r1soft_agents
+  tasks:
+    - name: install mysql
+      package:
+        name: mariadb-server
+        state: present
+    - name: enable mysql
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+    - name: run agent role
+      include_role:
+        name: ansible-role-r1soft
+  tags:
+    - r1soft-agents

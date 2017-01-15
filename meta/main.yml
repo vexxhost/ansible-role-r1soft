@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: Mohammed Naser
+  description: Role to install and manage R1Soft
+  company: VEXXHOST, Inc.
+
+  license: Apache
+
+  min_ansible_version: 1.2
+
+  platforms:
+  - name: EL
+    versions:
+    - 7
+
+  galaxy_tags:
+    - r1soft
+
+
+dependencies: []
+...

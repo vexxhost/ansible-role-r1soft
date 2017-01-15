@@ -1,0 +1,15 @@
+---
+- name: install r1soft agent
+  yum:
+    name: serverbackup-enterprise-agent
+    state: present
+
+- name: install r1soft module
+  command: serverbackup-setup --get-module
+  args:
+    creates: "/lib/modules/r1soft/hcpdriver-cki-{{ ansible_kernel }}.ko"
+
+- name: authenticate with r1soft server
+  command: "serverbackup-setup --get-key http://{{ r1soft_host }}"
+  args:
+    creates: "/usr/sbin/r1soft/conf/server.allow/{{ r1soft_host }}"

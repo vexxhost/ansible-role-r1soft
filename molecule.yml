@@ -1,0 +1,77 @@
+---
+ansible:
+  playbook: tests/test.yml
+  group_vars:
+    r1soft_servers:
+      - r1soft_server: true
+        r1soft_username: admin
+        r1soft_password: foobar
+        r1soft_volumes:
+        - name: volume-1
+          description: volume-1-desc
+          path: /volume
+        r1soft_agents:
+        - hostname: "{{ hostvars[groups['r1soft_agents'][0]]['ansible_default_ipv4']['address'] }}"
+          description: r1soft-agent
+        r1soft_disk_safes:
+        - description: disk-safe-hourly
+          agent: "{{ hostvars[groups['r1soft_agents'][0]]['ansible_default_ipv4']['address'] }}"
+          path: /volume
+        - description: disk-safe-daily
+          agent: "{{ hostvars[groups['r1soft_agents'][0]]['ansible_default_ipv4']['address'] }}"
+          path: /volume
+        r1soft_policies:
+        - name: policy-hourly
+          description: back-it-up
+          disk_safe: disk-safe-hourly
+          replication_frequency:
+            type: hourly
+            values:
+              starting_minute: 5
+          merge_frequency:
+            type: on_demand
+          databases:
+            - name: 'mysql'
+              type: 'mysql'
+              username: 'root'
+              password: ''
+              port: 3306
+        - name: policy-daily
+          description: back-it-up
+          disk_safe: disk-safe-daily
+          replication_frequency:
+            type: daily
+            values:
+              starting_minute: 5
+              hours_of_day: [0]
+          merge_frequency:
+            type: on_demand
+          databases:
+            - name: 'mysql'
+              type: 'mysql'
+              username: 'root'
+              password: ''
+              port: 3306
+    r1soft_agents:
+      - r1soft_agent: true
+        r1soft_host: "{{ hostvars[groups['r1soft_servers'][0]]['ansible_default_ipv4']['address'] }}"
+dependency:
+  name: galaxy
+driver:
+  name: openstack
+openstack:
+  instances:
+    - name: r1soft-server
+      image: 'CentOS Linux 7 (Core) [2016-09-23]'
+      flavor: v1-standard-1
+      sshuser: centos
+      ansible_groups:
+        - r1soft_servers
+    - name: r1soft-agent
+      image: 'CentOS Linux 7 (Core) [2016-09-23]'
+      flavor: v1-standard-1
+      sshuser: centos
+      ansible_groups:
+        - r1soft_agents
+verifier:
+  name: testinfra

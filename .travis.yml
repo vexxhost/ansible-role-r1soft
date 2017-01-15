@@ -1,0 +1,8 @@
+cache:
+  - pip
+language: python
+script:
+  - git clone https://github.com/vexxhost/molecule-ci-tools.git tools
+  - tools/run_tests.py
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/

@@ -1,0 +1,73 @@
+---
+- name: install r1soft server and dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - serverbackup-enterprise
+    - epel-release
+
+- name: setup username and password
+  command: "serverbackup-setup --user {{ r1soft_username }} --pass {{ r1soft_password }}"
+  args:
+    creates: /usr/sbin/r1soft/conf/.user_set
+  notify:
+    - restart cdp-server
+    - wait for r1soft to start up
+    - wait 5 more seconds for r1soft to bootstrap
+
+- name: install pip
+  yum:
+    name: python-pip
+    state: present
+
+- name: install zeep (dependency for r1soft modules)
+  pip:
+    name: zeep
+
+- meta: flush_handlers
+
+- name: setup volumes
+  r1soft_volume:
+    username: "{{ r1soft_username }}"
+    password: "{{ r1soft_password }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    path: "{{ item.path }}"
+  with_items: "{{ r1soft_volumes }}"
+
+- name: setup agents
+  r1soft_agent:
+    username: "{{ r1soft_username }}"
+    password: "{{ r1soft_password }}"
+    hostname: "{{ item.hostname }}"
+    port: "{{ item.port | default(1167) }}"
+    description: "{{ item.description }}"
+  with_items: "{{ r1soft_agents }}"
+  tags:
+    - r1soft-server-setup-agents
+
+- name: setup disk safes
+  r1soft_disk_safe:
+    username: "{{ r1soft_username }}"
+    password: "{{ r1soft_password }}"
+    description: "{{ item.description }}"
+    agent: "{{ item.agent }}"
+    path: "{{ item.path }}"
+  with_items: "{{ r1soft_disk_safes }}"
+  tags:
+    - r1soft-server-setup-disk-safes
+
+- name: setup policies
+  r1soft_policy:
+    username: "{{ r1soft_username }}"
+    password: "{{ r1soft_password }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    disk_safe: "{{ item.disk_safe }}"
+    replication_frequency: "{{ item.replication_frequency }}"
+    merge_frequency: "{{ item.merge_frequency }}"
+    databases: "{{ item.databases }}"
+  with_items: "{{ r1soft_policies }}"
+  tags:
+    - r1soft-server-setup-policies

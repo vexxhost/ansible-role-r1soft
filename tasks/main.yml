@@ -1,0 +1,16 @@
+---
+- name: add r1soft repository
+  yum_repository:
+    name: r1soft
+    description: R1Soft Repository Server
+    baseurl: http://repo.r1soft.com/yum/stable/$basearch/
+    enabled: yes
+    gpgcheck: no
+
+- include: install-server.yml
+  static: no
+  when: r1soft_server == True
+
+- include: install-agent.yml
+  static: no
+  when: r1soft_agent == True

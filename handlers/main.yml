@@ -1,0 +1,15 @@
+---
+- name: restart cdp-server
+  service:
+    name: cdp-server
+    state: restarted
+    enabled: yes
+
+- name: wait for r1soft to start up
+  wait_for:
+    port: 9080
+    timeout: 300
+
+- name: wait 5 more seconds for r1soft to bootstrap
+  wait_for:
+    timeout: 5
